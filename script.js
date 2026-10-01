@@ -386,6 +386,19 @@ function translatePage(lang) {
                 if (projTitle) projTitle.textContent = t.projects[i].title;
                 if (projDesc) projDesc.textContent = t.projects[i].desc;
             }
+            const details = projectCardDetails[lang][i];
+            if (details) {
+                card.querySelector('.visual-label').textContent = details.label;
+                const title = card.querySelector('.visual-title');
+                title.replaceChildren();
+                details.title.forEach((line, index) => {
+                    if (index) title.append(document.createElement('br'));
+                    title.append(document.createTextNode(line));
+                });
+                card.querySelector('.visual-caption').textContent = details.caption;
+                card.querySelectorAll('.project-tags .tag').forEach((tag, index) => { tag.textContent = details.tags[index]; });
+                card.querySelectorAll('.project-btn span').forEach((label, index) => { label.textContent = details.buttons[index]; });
+            }
         });
     }
 
@@ -473,6 +486,37 @@ translations.en.projects[1].desc = 'Undergraduate research wearable using an ESP
 translations.en.projects[0].title = 'Remote Animal Feeding';
 translations.en.projects[6].title = 'Pizzaguidão — Roguelike Game';
 translations.en.projects.unshift({title:'ALERTA — Patient Monitoring',desc:'A wearable device integrated with a monitoring interface to help hospitals and home care services follow patients with mobility restrictions. Developed from the Fall Risk undergraduate research project, ALERTA won first place in Market Feasibility, Level 4, at Inatel’s FETIN.'});
+// Keep icons and line breaks intact while translating every part of a card.
+const projectCardsForTranslation = Array.from(document.querySelectorAll('.project-card'));
+projectCardsForTranslation.forEach(card => {
+    card.querySelectorAll('.project-btn').forEach(button => {
+        Array.from(button.childNodes).filter(node => node.nodeType === Node.TEXT_NODE && node.textContent.trim()).forEach(node => {
+            const label = document.createElement('span');
+            label.textContent = node.textContent.trim();
+            node.replaceWith(label);
+        });
+    });
+});
+const projectCardDetails = {
+    pt: projectCardsForTranslation.map(card => ({
+        label: card.querySelector('.visual-label').textContent,
+        title: card.querySelector('.visual-title').innerHTML.split(/<br\s*\/?\s*>/i),
+        caption: card.querySelector('.visual-caption').textContent,
+        tags: Array.from(card.querySelectorAll('.project-tags .tag'), tag => tag.textContent),
+        buttons: Array.from(card.querySelectorAll('.project-btn span'), label => label.textContent)
+    })),
+    en: [
+        {label:'ALERTA / eHealth',title:['Connected care.','Assisted mobility.'],caption:'1st place · Market Feasibility · Level 4',tags:['Wearable','eHealth','Monitoring','FETIN · 1st place'],buttons:['Explore ALERTA']},
+        {label:'IoT / FETIN',title:['Connected.','Even from a distance.'],caption:'2nd place · Category 2',tags:['IoT','Hardware','Award Winner'],buttons:['View post']},
+        {label:'eHealth / Research',title:['Technology','that cares.'],caption:'ESP32 + MPU6050',tags:['ESP32','C++','REST API'],buttons:[]},
+        {label:'Data / Python',title:['Data reveals','patterns.'],caption:'Exploration & visualization',tags:['Python','Pandas','Matplotlib'],buttons:['GitHub']},
+        {label:'Web / Education',title:['Academic life,','organized.'],caption:'INATEL Portal',tags:['HTML/CSS','JavaScript','Chart.js'],buttons:['Demo','GitHub']},
+        {label:'AI / Product',title:['One essence.','Many possibilities.'],caption:'EssentIA',tags:['Python','LangGraph','Docker','JavaScript'],buttons:['Demo','GitHub']},
+        {label:'Big Data / Engineering',title:['Bronze → Silver','→ Gold.'],caption:'Medallion Architecture',tags:['Databricks','PySpark','Delta Lake','ETL'],buttons:['GitHub']},
+        {label:'Game / Web',title:['One pizza.','Another adventure.'],caption:'Pizzaguidão',tags:['JavaScript','Game Dev','Hackathon'],buttons:['Demo','GitHub']},
+        {label:'Backend / DevOps',title:['From commit','to delivery.'],caption:'API + CI/CD',tags:['Jenkins','Docker','FastAPI','CI/CD'],buttons:['GitHub']}
+    ]
+};
 const savedLanguage = localStorage.getItem('language');
 const themeToggle = document.getElementById('themeToggle');
 function updateThemeButton() {
